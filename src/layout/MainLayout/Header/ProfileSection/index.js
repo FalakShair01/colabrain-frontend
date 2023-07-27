@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import configData from '../../../../config';
+import axios from 'axios';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -33,8 +35,8 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
-import UpgradePlanCard from './UpgradePlanCard';
 import User1 from 'assets/images/users/user-round.svg';
+import { LOGOUT } from './../../../../store/actions';
 
 // assets
 import { IconLogout, IconSearch, IconSettings, IconUser } from '@tabler/icons';
@@ -45,18 +47,31 @@ const ProfileSection = () => {
     const theme = useTheme();
     const customization = useSelector((state) => state.customization);
     const navigate = useNavigate();
-
+    const account = useSelector((state) => state.account);
+    const dispatcher = useDispatch();
     const [sdm, setSdm] = useState(true);
     const [value, setValue] = useState('');
-    const [notification, setNotification] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [open, setOpen] = useState(false);
     /**
      * anchorRef is used on different componets and specifying one type leads to other components throwing an error
      * */
     const anchorRef = useRef(null);
-    const handleLogout = async () => {
-        console.log('Logout');
+    const handleLogout = () => {
+        console.log(account.token);
+        axios
+            .post(configData.API_SERVER + 'logout/', { token: `${account.token}` }, { headers: { Authorization: `${account.token}` } })
+            .then(function (response) {
+                // Force the LOGOUT
+                //if (response.data.success) {
+                dispatcher({ type: LOGOUT });
+                //} else {
+                //    console.log('response - ', response.data.msg);
+                //}
+            })
+            .catch(function (error) {
+                console.log('error - ', error);
+            });
     };
 
     const handleClose = (event) => {
@@ -157,12 +172,11 @@ const ProfileSection = () => {
                                     <Box sx={{ p: 2 }}>
                                         <Stack>
                                             <Stack direction="row" spacing={0.5} alignItems="center">
-                                                <Typography variant="h4">Good Morning,</Typography>
+                                                <Typography variant="h4">Hi,</Typography>
                                                 <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                                                    Johne Doe
+                                                    Waqas Ahmed
                                                 </Typography>
                                             </Stack>
-                                            <Typography variant="subtitle2">Project Admin</Typography>
                                         </Stack>
                                         <OutlinedInput
                                             sx={{ width: '100%', pr: 1, pl: 2, my: 2 }}
@@ -184,7 +198,6 @@ const ProfileSection = () => {
                                     </Box>
                                     <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 250px)', overflowX: 'hidden' }}>
                                         <Box sx={{ p: 2 }}>
-                                            <UpgradePlanCard />
                                             <Divider />
                                             <Card
                                                 sx={{
@@ -204,21 +217,6 @@ const ProfileSection = () => {
                                                                         color="primary"
                                                                         checked={sdm}
                                                                         onChange={(e) => setSdm(e.target.checked)}
-                                                                        name="sdm"
-                                                                        size="small"
-                                                                    />
-                                                                </Grid>
-                                                            </Grid>
-                                                        </Grid>
-                                                        <Grid item>
-                                                            <Grid item container alignItems="center" justifyContent="space-between">
-                                                                <Grid item>
-                                                                    <Typography variant="subtitle1">Allow Notifications</Typography>
-                                                                </Grid>
-                                                                <Grid item>
-                                                                    <Switch
-                                                                        checked={notification}
-                                                                        onChange={(e) => setNotification(e.target.checked)}
                                                                         name="sdm"
                                                                         size="small"
                                                                     />

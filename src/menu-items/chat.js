@@ -1,30 +1,22 @@
 // assets
-import { IconPlus, IconHelp } from '@tabler/icons';
+import QuestionAnswerOutlinedIcon from '@mui/icons-material/QuestionAnswerOutlined';
 
 // constant
-const icons = { IconPlus, IconHelp };
+const icons = { QuestionAnswerOutlinedIcon };
 
 // ==============================|| New Chat ||============================== //
 
 const chat = {
-    id: 'sample-docs-roadmap',
+    id: 'chat',
     type: 'group',
     children: [
         {
-            id: 'new-chat',
-            title: 'New Chat',
+            id: 'chat',
+            title: 'Chat',
             type: 'item',
-            url: '/Chatbox',
-            icon: icons.IconPlus,
-            breadcrumbs: false
-        },
-        {
-            id: 'saved-chats',
-            title: 'Saved Chats',
-            type: 'item',
-            url: '/saved-chats',
-            icon: icons.IconPlus,
-            breadcrumbs: false
+            url: '/',
+            icon: icons.QuestionAnswerOutlinedIcon,
+            breadcrumbs: true
         }
     ]
 };

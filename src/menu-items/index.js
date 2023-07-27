@@ -1,12 +1,10 @@
-import dashboard from './dashboard';
-import pages from './pages';
-import utilities from './utilities';
 import chat from './chat';
+import account from './account';
 
 // ==============================|| MENU ITEMS ||============================== //
 
 const menuItems = {
-    items: [dashboard, pages, utilities, chat]
+    items: [chat, account]
 };
 
 export default menuItems;

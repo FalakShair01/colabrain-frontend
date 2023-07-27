@@ -1,65 +1,53 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { styled } from '@mui/system';
-import { Paper, Typography, TextField, Button } from '@mui/material';
+import { Paper } from '@mui/material';
+import PerfectScrollbar from 'react-perfect-scrollbar';
+import ChatMessage from './ChatMessage';
+import ChatInput from './ChatInput';
 
 const ChatContainer = styled(Paper)(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
-    height: '500px',
+    maxHeight: '63vh',
+    height: '63vh',
     padding: theme.spacing(2),
-    backgroundColor: 'transparent',
+    paddingBottom: theme.spacing(3), // Add a gap of 3 spacing units at the bottom
+    backgroundColor: '#F8FAFC',
     borderRadius: theme.spacing(1)
 }));
 
-const MessageContainer = styled('div')(({ theme }) => ({
+const MessageContainer = styled(PerfectScrollbar)(({ theme }) => ({
     flex: 1,
-    overflowY: 'auto',
     marginBottom: theme.spacing(2),
     width: '100%',
     maxWidth: '100%',
     display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end' // Align messages to the right side
-}));
-
-const Message = styled(Typography)(({ theme }) => ({
-    padding: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-    borderRadius: theme.spacing(1),
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText
-}));
-
-const InputContainer = styled('div')(({}) => ({
-    display: 'flex'
-}));
-
-const Input = styled(TextField)(({ theme }) => ({
-    flex: 1,
-    marginRight: theme.spacing(1)
-}));
-
-const SendButton = styled(Button)(({ theme }) => ({
-    backgroundColor: theme.palette.secondary.main,
-    color: theme.palette.secondary.contrastText,
-    '&:hover': {
-        backgroundColor: theme.palette.secondary.dark
-    }
+    flexDirection: 'column'
 }));
 
 const ChatBox = () => {
-    const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
 
-    const handleInputChange = (event) => {
-        setMessage(event.target.value);
+    const getTimeStamp = () => {
+        const date = new Date();
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const amPM = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12;
+        const formattedMinutes = minutes.toString().padStart(2, '0');
+        return `${formattedHours}:${formattedMinutes} ${amPM}`;
     };
 
-    const handleSend = () => {
-        if (message.trim() !== '') {
-            setMessages((prevMessages) => [...prevMessages, message.trim()]);
-            setMessage('');
-        }
+    const handleSend = (message) => {
+        setMessages((prevMessages) => [...prevMessages, { text: message, time: getTimeStamp(), isUserMessage: true }]);
+
+        // Simulate a reply message after a short delay (here, 1 second)
+        setTimeout(() => {
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { text: 'This is a reply message!', time: getTimeStamp(), isUserMessage: false }
+            ]);
+        }, 1000);
     };
 
     return (
@@ -67,30 +55,12 @@ const ChatBox = () => {
             <ChatContainer elevation={3}>
                 <MessageContainer>
                     {messages.map((msg, index) => (
-                        <Message key={index} variant="body2">
-                            {msg}
-                        </Message>
+                        <ChatMessage key={index} text={msg.text} time={msg.time} isUserMessage={msg.isUserMessage} />
                     ))}
                 </MessageContainer>
-                <InputContainer>
-                    <Input
-                        label="Type a message"
-                        variant="outlined"
-                        value={message}
-                        onChange={handleInputChange}
-                        onKeyPress={(event) => {
-                            if (event.key === 'Enter') {
-                                handleSend();
-                            }
-                        }}
-                    />
-                    <SendButton variant="contained" onClick={handleSend}>
-                        Send
-                    </SendButton>
-                </InputContainer>
+                <ChatInput onSend={handleSend} />
             </ChatContainer>
-
-             </div>
+        </div>
     );
 };
 

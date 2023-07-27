@@ -18,7 +18,7 @@ const Logo = () => {
          */
         <div>
             {/* <img src={logoDark} alt="Berry" width="100"> */}
-            <h2 style={{ color: '#4527A0', background: '#EDE7F6', padding: '0.5rem', borderRadius: '7px' }}>COLABRAIN</h2>
+            <h2 style={{}}>COLABRAIN</h2>
         </div>
 
         // <svg width="92" height="32" viewBox="0 0 92 32" fill="none" xmlns="http://www.w3.org/2000/svg">

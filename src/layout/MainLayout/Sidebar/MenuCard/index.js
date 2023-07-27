@@ -1,8 +1,8 @@
 import React from 'react';
 
 // material-ui
-import { makeStyles } from '@material-ui/styles';
-import { Button, Card, CardContent, Grid, Link, Stack, Typography } from '@material-ui/core';
+import { makeStyles } from '@mui/material/styles';
+import { Button, Card, CardContent, Grid, Link, Stack, Typography } from '@mui/material';
 
 // project imports
 import AnimateButton from './../../../../ui-component/extended/AnimateButton';
@@ -63,9 +63,7 @@ const UpgradePlanCard = () => {
             <CardContent>
                 <Grid container direction="column" spacing={2}>
                     <Grid item>
-                        <Typography variant="h4">
-                            React Nodejs Berry
-                        </Typography>
+                        <Typography variant="h4">React Nodejs Berry</Typography>
                     </Grid>
                     <Grid item>
                         <Typography variant="subtitle2" className={classes.tagLine}>
@@ -83,7 +81,7 @@ const UpgradePlanCard = () => {
                                     className={classes.button}
                                 >
                                     See Product
-                                </Button>                                
+                                </Button>
                             </AnimateButton>
                         </Stack>
                     </Grid>
