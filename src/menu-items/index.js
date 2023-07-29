@@ -6,7 +6,8 @@ import chat from './chat';
 // ==============================|| MENU ITEMS ||============================== //
 
 const menuItems = {
-    items: [dashboard, pages, utilities, chat]
+    // items: [dashboard, pages, utilities, chat]
+    items: [chat]
 };
 
 export default menuItems;

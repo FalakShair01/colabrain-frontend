@@ -89,8 +89,7 @@ const ChatBox = () => {
                     </SendButton>
                 </InputContainer>
             </ChatContainer>
-
-             </div>
+        </div>
     );
 };
 
