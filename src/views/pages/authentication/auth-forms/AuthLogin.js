@@ -69,7 +69,7 @@ const AuthLogin = ({ ...others }) => {
                                 password: values.password
                             })
                             .then(function (response) {
-                                if (response.data.access) {
+                                if (response.data) {
                                     const { user, access } = response.data;
                                     console.log(response.data);
 
@@ -80,7 +80,7 @@ const AuthLogin = ({ ...others }) => {
                                     axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
                                     dispatcher({
                                         type: ACCOUNT_INITIALIZE,
-                                        payload: { isLoggedIn: true, user: response.data.user, token: response.data.access }
+                                        payload: { isLoggedIn: true, user: response.data.user, token: response.data }
                                     });
                                     if (scriptedRef.current) {
                                         setStatus({ success: true });

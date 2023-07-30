@@ -16,7 +16,7 @@ const chat = {
             type: 'item',
             url: '/',
             icon: icons.QuestionAnswerOutlinedIcon,
-            breadcrumbs: true
+            breadcrumbs: false
         }
     ]
 };

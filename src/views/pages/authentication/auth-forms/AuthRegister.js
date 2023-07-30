@@ -1,19 +1,15 @@
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState } from 'react';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import configData from '../../../../config';
 
 // Material-UI components and icons
 import {
     Box,
     Button,
-    Checkbox,
-    Divider,
     FormControl,
-    FormControlLabel,
     FormHelperText,
     Grid,
     IconButton,
@@ -21,25 +17,31 @@ import {
     InputLabel,
     OutlinedInput,
     TextField,
+    Snackbar,
     Typography
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import MuiAlert from '@mui/material/Alert';
 
 // Third-party components
 import AnimateButton from 'ui-component/extended/AnimateButton';
 import { strengthColor, strengthIndicator } from 'utils/password-strength';
 
-const FirebaseRegister = ({ ...others }) => {
+const Alert = React.forwardRef((props, ref) => <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />);
+
+const Register = ({ ...others }) => {
     const navigate = useNavigate();
     const theme = useTheme();
-    const customization = useSelector((state) => state.customization);
     const [showPassword, setShowPassword] = useState(false);
-    const [checked, setChecked] = useState(true);
 
     const [strength, setStrength] = useState(0);
     const [level, setLevel] = useState();
+
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+    const [snackbarMessage, setSnackbarMessage] = useState('');
 
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword);
@@ -57,24 +59,28 @@ const FirebaseRegister = ({ ...others }) => {
 
     const handleSubmitForm = async (values, { setErrors, setStatus, setSubmitting }) => {
         try {
-            const requestData = {
-                user: {
-                    username: values.username,
-                    email: values.email,
-                    password: values.password
-                },
-                company_name: values.companyName,
-                phone: values.phone
-            };
+            const formData = new FormData();
+            formData.append('user.username', values.username);
+            formData.append('user.email', values.email);
+            formData.append('user.password', values.password);
+            formData.append('phone', values.phone);
+            formData.append('company_name', values.company_name);
 
-            const response = await axios.post(configData.API_SERVER + 'register/', requestData);
+            const response = await axios.post(configData.API_SERVER + 'register/', formData);
 
             console.log('API response:', response.data);
 
             setStatus({ success: true });
 
-            // Registration successful, redirect to the login page
-            navigate('/login');
+            // Show success message in Snackbar
+            setSnackbarSeverity('success');
+            setSnackbarMessage('Registration successful! Redirecting to login page...');
+            setSnackbarOpen(true);
+
+            // Registration successful, redirect to the login page after a delay
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
         } catch (err) {
             console.error(err);
             setStatus({ success: false });
@@ -87,9 +93,22 @@ const FirebaseRegister = ({ ...others }) => {
                 });
                 setErrors(formErrors);
             }
+
+            // Show error message in Snackbar
+            setSnackbarSeverity('error');
+            setSnackbarMessage('An error occurred during registration. Please try again.');
+            setSnackbarOpen(true);
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setSnackbarOpen(false);
     };
 
     return (
@@ -187,15 +206,40 @@ const FirebaseRegister = ({ ...others }) => {
                                                     onClick={handleClickShowPassword}
                                                     onMouseDown={handleMouseDownPassword}
                                                     edge="end"
+                                                    size="large"
                                                 >
                                                     {showPassword ? <Visibility /> : <VisibilityOff />}
                                                 </IconButton>
                                             </InputAdornment>
                                         }
-                                        error={Boolean(touched.password && errors.password)}
+                                        inputProps={{}}
                                     />
-                                    {touched.password && errors.password && <FormHelperText error>{errors.password}</FormHelperText>}
+                                    {touched.password && errors.password && (
+                                        <FormHelperText error id="standard-weight-helper-text-password-register">
+                                            {errors.password}
+                                        </FormHelperText>
+                                    )}
                                 </FormControl>
+
+                                {strength !== 0 && (
+                                    <FormControl fullWidth>
+                                        <Box sx={{ mb: 2 }}>
+                                            <Grid container spacing={2} alignItems="center">
+                                                <Grid item>
+                                                    <Box
+                                                        style={{ backgroundColor: level?.color }}
+                                                        sx={{ width: 85, height: 8, borderRadius: '7px' }}
+                                                    />
+                                                </Grid>
+                                                <Grid item>
+                                                    <Typography variant="subtitle1" fontSize="0.75rem">
+                                                        {level?.label}
+                                                    </Typography>
+                                                </Grid>
+                                            </Grid>
+                                        </Box>
+                                    </FormControl>
+                                )}
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
@@ -238,8 +282,15 @@ const FirebaseRegister = ({ ...others }) => {
                     </form>
                 )}
             </Formik>
+
+            {/* Snackbar to show success and error messages */}
+            <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleSnackbarClose}>
+                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </>
     );
 };
 
-export default FirebaseRegister;
+export default Register;

@@ -17,7 +17,7 @@ const Footer = () => {
         >
             <Divider sx={{ marginBottom: '0.5rem' }} />
             <Typography variant="body2" color="textSecondary">
-                &copy; 2023 Made with <FavoriteIcon fontSize="small" sx={{ color: 'red', fontSize: '1rem' }} /> by Colabrain
+                &copy; 2023 Made with <FavoriteIcon fontSize="small" sx={{ color: '#673ab7', fontSize: '1rem' }} /> by Colabrain
             </Typography>
         </Box>
     );

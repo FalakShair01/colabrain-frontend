@@ -1,21 +1,66 @@
-import { useState } from 'react';
-import { Button, Grid, TextField } from '@mui/material';
-
+import React, { useState } from 'react';
+import { Button, Grid, TextField, Snackbar } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import configData from 'config';
+const Alert = React.forwardRef((props, ref) => <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />);
 const Password = () => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [isSnackbarOpen, setSnackbarOpen] = useState(false);
+    const account = useSelector((state) => state.account);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Implement your logic to save the edited details and password
-        console.log('Details updated successfully!');
+        if (newPassword !== confirmPassword) {
+            setErrorMessage("New password and confirm password don't match.");
+            setSnackbarOpen(true);
+            return;
+        }
+
+        const data = {
+            old_password: currentPassword,
+            new_password: newPassword,
+            confirm_password: confirmPassword
+        };
+
+        try {
+            const response = await axios.post(configData.API_SERVER + 'change-password/', data, {
+                headers: {
+                    Authorization: `Bearer ${account.token.access}`
+                }
+            });
+            if (response.status === 200) {
+                setSuccessMessage('Password changed successfully!');
+                setSnackbarOpen(true);
+                // Implement any additional logic you need here
+            } else {
+                setErrorMessage('Failed to change password.');
+                setSnackbarOpen(true);
+                console.log('Error:', response.data.error);
+            }
+        } catch (error) {
+            setErrorMessage('Error occurred while changing password.');
+            setSnackbarOpen(true);
+            console.error('Error occurred while changing password:', error);
+        }
     };
 
     const handleClear = () => {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
+    };
+
+    const handleCloseSnackbar = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbarOpen(false);
     };
 
     return (
@@ -65,6 +110,13 @@ const Password = () => {
                     Clear
                 </Button>
             </div>
+
+            {/* Snackbar to show success and error messages */}
+            <Snackbar open={isSnackbarOpen} autoHideDuration={4000} onClose={handleCloseSnackbar}>
+                <Alert onClose={handleCloseSnackbar} severity={successMessage ? 'success' : 'error'}>
+                    {successMessage || errorMessage}
+                </Alert>
+            </Snackbar>
         </form>
     );
 };

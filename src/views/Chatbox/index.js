@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { styled } from '@mui/system';
 import { Paper } from '@mui/material';
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -8,12 +8,18 @@ import ChatInput from './ChatInput';
 const ChatContainer = styled(Paper)(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
-    maxHeight: '63vh',
-    height: '63vh',
+    maxHeight: '90vh',
+    height: '74vh',
     padding: theme.spacing(2),
     paddingBottom: theme.spacing(3), // Add a gap of 3 spacing units at the bottom
-    backgroundColor: '#F8FAFC',
-    borderRadius: theme.spacing(1)
+    backgroundColor: '#FAFAFA',
+    borderRadius: theme.spacing(2),
+    border: '1px solid #CAE5FA'
+    // position: 'absolute',
+    // bottom: '5rem',
+    // top: '6rem',
+    // right: '2rem',
+    // left: '2rem'
 }));
 
 const MessageContainer = styled(PerfectScrollbar)(({ theme }) => ({
@@ -52,7 +58,7 @@ const ChatBox = () => {
 
     return (
         <div>
-            <ChatContainer elevation={3}>
+            <ChatContainer>
                 <MessageContainer>
                     {messages.map((msg, index) => (
                         <ChatMessage key={index} text={msg.text} time={msg.time} isUserMessage={msg.isUserMessage} />

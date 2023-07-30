@@ -1,59 +1,95 @@
-import { useState } from 'react';
-import { Button, TextField, FormControl, InputLabel, Select, MenuItem, Grid } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Button, TextField, FormControl, MenuItem, Grid, Snackbar } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import configData from 'config';
 
-const countries = ['Pakistan', 'USA', 'Canada', 'UK', 'Australia', 'Germany']; // You can customize the list of countries
+const countries = ['Pakistan', 'USA', 'Canada', 'UK', 'Australia', 'Germany'];
+const roles = ['organization', 'Admin', 'Manager', 'Employee'];
+const Alert = React.forwardRef((props, ref) => <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />);
 
 const EditDetails = () => {
-    const [name, setName] = useState('John Doe');
-    const [email, setEmail] = useState('johndoe@example.com');
-    const [country, setCountry] = useState('USA');
-    const [dateOfBirth, setDateOfBirth] = useState('1990-01-01');
-    const [phoneNumber, setPhoneNumber] = useState('+1 123-456-7890');
-    const [company, setCompany] = useState('Colabrain');
+    const [username, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [country, setCountry] = useState('');
+    const [role, setRole] = useState('');
+    const [phone, setPhoneNumber] = useState('');
+    const [company_name, setCompany] = useState('');
+    const [snackbarOpen, setSnackbarOpen] = useState(false); // State for Snackbar
+    const account = useSelector((state) => state.account);
+
+    useEffect(() => {
+        axios
+            .get(configData.API_SERVER + 'company-profile/', {
+                headers: {
+                    Authorization: `Bearer ${account.token.access}`
+                }
+            })
+            .then((response) => {
+                const data = response.data;
+                setName(data.user.username || '');
+                setEmail(data.user.email || '');
+                setCountry(data.country || '');
+                setPhoneNumber(data.phone || '');
+                setCompany(data.company_name || '');
+                setRole(data.role || '');
+            })
+            .catch((error) => {
+                console.error('Error fetching default details:', error);
+                // Handle the error if required
+            });
+    }, [account]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Prepare the data object to be sent in the request body
-        const data = {
-            name,
-            email,
-            country,
-            dateOfBirth,
-            phoneNumber,
-            company
-        };
+        const formData = new FormData();
+        formData.append('user.username', username);
+        formData.append('user.email', email);
+        formData.append('country', country);
+        formData.append('role', role);
+        formData.append('phone', phone);
+        formData.append('company_name', company_name);
 
         try {
-            const response = await fetch('http://falak.pythonanywhere.com/api/company-profile/', {
-                method: 'PUT',
+            const response = await axios.put(configData.API_SERVER + 'company-profile/', formData, {
                 headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
+                    Authorization: `Bearer ${account.token.access}`
+                }
             });
 
-            const responseData = await response.json();
-
-            if (response.ok) {
-                // If the response is successful, you can handle the success message or perform any other actions
-                console.log('Details updated successfully!');
-                console.log('Response:', responseData);
+            if (response.status === 200) {
+                setSnackbarOpen(true);
+                // ... Rest of the code ...
             } else {
-                // If the response is not successful, handle the error
-                console.log('Failed to update details.');
-                console.log('Error:', responseData.error);
+                // ... Rest of the code ...
             }
         } catch (err) {
             console.error('Error occurred while updating details:', err);
         }
     };
 
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbarOpen(false);
+    };
+
     return (
         <form onSubmit={handleSubmit}>
-            <Grid container direction="column" spacing={1}>
+            <Grid container direction="column" spacing={0.5}>
                 <Grid item xs={12} sm={12} lg={12}>
-                    <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} margin="normal" required fullWidth />
+                    <TextField
+                        label="User Name"
+                        value={username}
+                        onChange={(e) => setName(e.target.value)}
+                        margin="normal"
+                        required
+                        fullWidth
+                    />
                 </Grid>
                 <Grid item xs={12} sm={12} lg={12}>
                     <TextField
@@ -67,37 +103,47 @@ const EditDetails = () => {
                     />
                 </Grid>
             </Grid>
-            <Grid container direction="row" spacing={1}>
+            <Grid container direction="row" spacing={2}>
                 <Grid item xs={12} sm={12} lg={6}>
                     <FormControl style={{ width: '100%', marginTop: '16px' }} required>
-                        <InputLabel>Country</InputLabel>
-                        <Select value={country} onChange={(e) => setCountry(e.target.value)}>
+                        <TextField
+                            id="outlined-select-currency"
+                            select
+                            label="Country"
+                            value={country}
+                            onChange={(e) => setCountry(e.target.value)}
+                            fullWidth
+                        >
                             {countries.map((country) => (
                                 <MenuItem key={country} value={country}>
                                     {country}
                                 </MenuItem>
                             ))}
-                        </Select>
+                        </TextField>
+                    </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={12} lg={6}>
+                    <FormControl style={{ width: '100%', marginTop: '16px' }} required>
+                        <TextField
+                            id="outlined-select-currency"
+                            select
+                            label="Role"
+                            fullWidth
+                            value={role}
+                            onChange={(e) => setRole(e.target.value)}
+                        >
+                            {roles.map((role) => (
+                                <MenuItem key={role} value={role}>
+                                    {role}
+                                </MenuItem>
+                            ))}
+                        </TextField>
                     </FormControl>
                 </Grid>
                 <Grid item xs={12} sm={12} lg={6}>
                     <TextField
-                        type="date"
-                        label="Date of Birth"
-                        value={dateOfBirth}
-                        onChange={(e) => setDateOfBirth(e.target.value)}
-                        margin="normal"
-                        required
-                        fullWidth
-                        InputLabelProps={{
-                            shrink: true
-                        }}
-                    />
-                </Grid>
-                <Grid item xs={12} sm={12} lg={6}>
-                    <TextField
                         label="Phone Number"
-                        value={phoneNumber}
+                        value={phone}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         margin="normal"
                         required
@@ -107,7 +153,7 @@ const EditDetails = () => {
                 <Grid item xs={12} sm={12} lg={6}>
                     <TextField
                         label="Company"
-                        value={company}
+                        value={company_name}
                         onChange={(e) => setCompany(e.target.value)}
                         margin="normal"
                         required
@@ -120,6 +166,13 @@ const EditDetails = () => {
                     Save Changes
                 </Button>
             </div>
+
+            {/* Snackbar to show success message */}
+            <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleSnackbarClose}>
+                <Alert onClose={handleSnackbarClose} severity="success">
+                    Details updated successfully!
+                </Alert>
+            </Snackbar>
         </form>
     );
 };

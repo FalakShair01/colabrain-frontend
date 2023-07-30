@@ -11,7 +11,6 @@ import AuthGuard from 'utils/route-guard/AuthGuard';
 // sample page routing
 const Chatbox = Loadable(lazy(() => import('views/Chatbox')));
 const AccountSettings = Loadable(lazy(() => import('views/AccountSettings')));
-const UsersList = Loadable(lazy(() => import('views/UsersList')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -32,14 +31,6 @@ const MainRoutes = {
             element: (
                 <AuthGuard>
                     <AccountSettings />
-                </AuthGuard>
-            )
-        },
-        {
-            path: '/users-list',
-            element: (
-                <AuthGuard>
-                    <UsersList />
                 </AuthGuard>
             )
         }

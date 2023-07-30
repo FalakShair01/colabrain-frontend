@@ -12,6 +12,15 @@ import LockIcon from '@mui/icons-material/Lock';
 // ==============================|| Account Settings ||============================== //
 
 const AccountSettings = () => {
+    const [avatarData, setAvatarData] = useState({
+        avatar: '', // The base64 data of the uploaded avatar image
+        profile_pic: '' // The profile picture data fetched from the API
+    });
+
+    const handleAvatarChange = (data) => {
+        // When the avatar is changed or removed, update the avatarData state
+        setAvatarData(data);
+    };
     const [activeTab, setActiveTab] = useState(0);
 
     const handleTabChange = (event, newValue) => {
@@ -19,7 +28,7 @@ const AccountSettings = () => {
     };
 
     return (
-        <MainCard>
+        <MainCard title="Account Settings">
             <Tabs value={activeTab} onChange={handleTabChange} variant="fullWidth">
                 <Tab
                     label={
@@ -46,7 +55,7 @@ const AccountSettings = () => {
                         <SubCard title="Profile Picture">
                             <Grid container direction="column" spacing={1}>
                                 <Grid item>
-                                    <AvatarUpload />
+                                    <AvatarUpload onChange={handleAvatarChange} currentAvatar={avatarData.avatar} />
                                 </Grid>
                             </Grid>
                         </SubCard>

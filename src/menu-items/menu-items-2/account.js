@@ -1,10 +1,9 @@
 // assets
 import PersonPinOutlinedIcon from '@mui/icons-material/PersonPinOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
-import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 
 // constant
-const icons = { PersonPinOutlinedIcon, LogoutOutlinedIcon, PeopleAltOutlinedIcon };
+const icons = { PersonPinOutlinedIcon, LogoutOutlinedIcon };
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -19,14 +18,6 @@ const account = {
             type: 'item',
             url: '/account-settings',
             icon: icons.PersonPinOutlinedIcon,
-            breadcrumbs: true
-        },
-        {
-            id: 'users',
-            title: 'Users List',
-            type: 'item',
-            url: '/users-list',
-            icon: icons.PeopleAltOutlinedIcon,
             breadcrumbs: true
         },
         {
