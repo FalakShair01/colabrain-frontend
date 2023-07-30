@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { styled } from '@mui/system';
 import { Paper, Typography, TextField, Button } from '@mui/material';
+import { useParams } from 'react-router-dom';
+import useSwrRequest from 'hooks/useSWR';
+import { API_CHAT_ADD_MESSAGE, API_GET_CHAT } from 'config/WebServices';
+import useApiRequest from 'hooks/useApiRequest';
 
 const ChatContainer = styled(Paper)(({ theme }) => ({
     display: 'flex',
@@ -18,16 +22,17 @@ const MessageContainer = styled('div')(({ theme }) => ({
     width: '100%',
     maxWidth: '100%',
     display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end' // Align messages to the right side
+    flexDirection: 'column'
+    // alignItems: 'flex-end' // Align messages to the right side
 }));
 
-const Message = styled(Typography)(({ theme }) => ({
+const Message = styled(Typography)(({ theme, isChatBot }) => ({
     padding: theme.spacing(1),
     marginBottom: theme.spacing(1),
     borderRadius: theme.spacing(1),
     backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText
+    color: theme.palette.primary.contrastText,
+    alignSelf: isChatBot ? 'flex-start' : 'flex-end'
 }));
 
 const InputContainer = styled('div')(({}) => ({
@@ -50,15 +55,30 @@ const SendButton = styled(Button)(({ theme }) => ({
 const ChatBox = () => {
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
+    const { id } = useParams();
+
+    const { data, error, mutate } = useSwrRequest(`${API_GET_CHAT.route}${id}/`);
+    const { requestEndpoint } = useApiRequest(API_CHAT_ADD_MESSAGE.route, API_CHAT_ADD_MESSAGE.type);
 
     const handleInputChange = (event) => {
         setMessage(event.target.value);
     };
 
-    const handleSend = () => {
-        if (message.trim() !== '') {
-            setMessages((prevMessages) => [...prevMessages, message.trim()]);
-            setMessage('');
+    const handleSend = async () => {
+        try {
+            const body = {
+                chat_id: id,
+                req: message
+            };
+            const response = await requestEndpoint(body);
+
+            if (message.trim() !== '') {
+                // setMessages((prevMessages) => [...prevMessages, message.trim()]);
+                setMessage('');
+            }
+            mutate();
+        } catch (error) {
+            console.log({ error }, '====');
         }
     };
 
@@ -66,10 +86,15 @@ const ChatBox = () => {
         <div>
             <ChatContainer elevation={3}>
                 <MessageContainer>
-                    {messages.map((msg, index) => (
-                        <Message key={index} variant="body2">
-                            {msg}
-                        </Message>
+                    {data?.messages?.map(({ id, req: _message, res: _chatBot }) => (
+                        <>
+                            <Message key={id + _message} variant="body2">
+                                {_message}
+                            </Message>
+                            <Message key={id + _chatBot} variant="body2" isChatBot>
+                                {_chatBot}
+                            </Message>
+                        </>
                     ))}
                 </MessageContainer>
                 <InputContainer>

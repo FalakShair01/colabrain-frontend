@@ -1,4 +1,4 @@
-import useSWR, { mutate } from 'swr';
+import useSWR from 'swr';
 
 const fetcher = ([url, token]) =>
     fetch(url, {
@@ -10,9 +10,9 @@ const fetcher = ([url, token]) =>
 const useSwrRequest = (path, token = false) => {
     const url = process.env.REACT_APP_BASE_URL + path;
 
-    const { data, error, isLoading, isValidating } = useSWR([url, token], fetcher);
+    const { data, error, isLoading, isValidating, mutate } = useSWR([url, token], fetcher);
 
-    return { data, error, isLoading, isValidating };
+    return { data, error, isLoading, isValidating, mutate };
 };
 
 export default useSwrRequest;
