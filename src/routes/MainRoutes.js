@@ -82,7 +82,7 @@ const MainRoutes = {
             ]
         },
         {
-            path: 'Chatbox',
+            path: 'Chatbox/:id',
             element: <Chatbox />
         }
     ]
