@@ -17,14 +17,6 @@ const chat = {
             url: '/Chatbox',
             icon: icons.IconPlus,
             breadcrumbs: false
-        },
-        {
-            id: 'saved-chats',
-            title: 'Saved Chats',
-            type: 'item',
-            url: '/saved-chats',
-            icon: icons.IconPlus,
-            breadcrumbs: false
         }
     ]
 };
