@@ -18,13 +18,13 @@ const useApiRequest = (path, method = 'GET', token = false) => {
             headers: {}
         };
 
-        if (!!process.env.REACT_APP_TOKEN) {
-            options.headers['Authorization'] = `Bearer ${process.env.REACT_APP_TOKEN}`;
+        if (token) {
+            options.headers['Authorization'] = `Bearer ${token}`;
         }
 
         if (requestData) {
             options.body = JSON.stringify(requestData);
-            options.header['Content-Type'] = 'application/json';
+            options.headers['Content-Type'] = 'application/json';
         }
 
         if (params) {
