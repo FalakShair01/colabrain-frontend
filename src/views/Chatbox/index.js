@@ -7,6 +7,7 @@ import { API_CHAT_ADD_MESSAGE, API_GET_CHAT } from 'config/WebServices';
 import useApiRequest from 'hooks/useApiRequest';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
+import { useSelector } from 'react-redux';
 
 const ChatContainer = styled(Paper)(({ theme }) => ({
     display: 'flex',
@@ -38,8 +39,8 @@ const Message = styled(Typography)(({ theme, isChatBot }) => ({
     padding: theme.spacing(1),
     marginBottom: theme.spacing(1),
     borderRadius: theme.spacing(1),
-    backgroundColor:'#E3F2FD',
-    color:'#364152',
+    backgroundColor: '#E3F2FD',
+    color: '#364152',
     alignSelf: isChatBot ? 'flex-start' : 'flex-end'
 }));
 
@@ -66,12 +67,13 @@ const SendButton = styled(Button)(({ theme }) => ({
 }));
 
 const ChatBox = () => {
+    const { token } = useSelector((state) => state.account);
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
     const { id } = useParams();
 
-    const { data, error, mutate } = useSwrRequest(`${API_GET_CHAT.route}${id}/`);
-    const { requestEndpoint } = useApiRequest(API_CHAT_ADD_MESSAGE.route, API_CHAT_ADD_MESSAGE.type);
+    const { data, error, mutate } = useSwrRequest(`${API_GET_CHAT.route}${id}/`, token?.access);
+    const { requestEndpoint } = useApiRequest(API_CHAT_ADD_MESSAGE.route, API_CHAT_ADD_MESSAGE.type, token?.access);
 
     const handleInputChange = (event) => {
         setMessage(event.target.value);
@@ -122,14 +124,14 @@ const ChatBox = () => {
                             }
                         }}
                         InputProps={{
-                    endAdornment: (
-                        <InputAdornment position="end">
-                            <SendButton variant="contained" disabled={!message.trim()} onClick={handleSend}>
-                                <SendOutlinedIcon />
-                            </SendButton>
-                        </InputAdornment>
-                    )
-                }}
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <SendButton variant="contained" disabled={!message.trim()} onClick={handleSend}>
+                                        <SendOutlinedIcon />
+                                    </SendButton>
+                                </InputAdornment>
+                            )
+                        }}
                     />
                 </InputContainer>
             </ChatContainer>

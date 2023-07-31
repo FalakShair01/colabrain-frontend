@@ -5,7 +5,6 @@ import { Divider, Typography } from '@mui/material';
 
 // project imports
 import menuItem2 from 'menu-items/menu-items-2';
-import { Typography } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 
 // project imports
@@ -17,17 +16,19 @@ import { API_DELETE_CHAT, API_GET_ALL_CHAT } from 'config/WebServices';
 import { IconMessage } from '@tabler/icons';
 import useApiRequest from 'hooks/useApiRequest';
 
+import { useSelector } from 'react-redux';
+
 // ==============================|| SIDEBAR MENU LIST ||============================== //
 
 const MenuList = () => {
-    const { data, error, mutate } = useSwrRequest(API_GET_ALL_CHAT.route);
+    const { token } = useSelector((state) => state.account);
+    const { data, error, mutate } = useSwrRequest(API_GET_ALL_CHAT.route, token?.access);
     const [menuItems, setMenuItems] = useState(menuItem);
-    const { requestEndpoint } = useApiRequest(API_DELETE_CHAT.route, API_DELETE_CHAT.type);
+    const { requestEndpoint } = useApiRequest(API_DELETE_CHAT.route, API_DELETE_CHAT.type, token?.access);
 
     const _onDeleteChat = async (chatId) => {
         try {
             const response = await requestEndpoint(null, chatId);
-            console.log({ response });
             mutate();
         } catch (error) {
             console.log({ error });
@@ -35,7 +36,6 @@ const MenuList = () => {
     };
 
     useEffect(() => {
-        console.log({ data });
         if (data?.length > 0) {
             const chats = {
                 id: 'messages',
@@ -89,7 +89,7 @@ const MenuList = () => {
 
     return (
         <>
-            <div>{navItems1}</div>
+            <div>{navItems}</div>
 
             <div style={{ position: 'absolute', bottom: '4rem', width: '87%' }}>
                 <Divider />

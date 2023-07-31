@@ -3,7 +3,7 @@ import useSWR from 'swr';
 const fetcher = ([url, token]) =>
     fetch(url, {
         headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`
+            Authorization: `Bearer ${token}`
         }
     }).then((res) => res.json());
 

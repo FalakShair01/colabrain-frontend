@@ -33,7 +33,6 @@ const MainRoutes = {
                     <AccountSettings />
                 </AuthGuard>
             )
-
         }
     ]
 };
