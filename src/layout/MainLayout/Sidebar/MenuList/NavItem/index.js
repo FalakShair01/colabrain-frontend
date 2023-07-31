@@ -22,8 +22,20 @@ const NavItem = ({ item, level }) => {
     const matchesSM = useMediaQuery(theme.breakpoints.down('lg'));
 
     const Icon = item.icon;
+    const SecondaryIcon = item.secondaryIcon;
     const itemIcon = item?.icon ? (
         <Icon stroke={1.5} size="1.3rem" />
+    ) : (
+        <FiberManualRecordIcon
+            sx={{
+                width: customization.isOpen.findIndex((id) => id === item?.id) > -1 ? 8 : 6,
+                height: customization.isOpen.findIndex((id) => id === item?.id) > -1 ? 8 : 6
+            }}
+            fontSize={level > 0 ? 'inherit' : 'medium'}
+        />
+    );
+    const itemIconSecondary = item?.secondaryIcon ? (
+        <SecondaryIcon stroke={1.5} size="1.3rem" />
     ) : (
         <FiberManualRecordIcon
             sx={{
@@ -93,6 +105,11 @@ const NavItem = ({ item, level }) => {
                     )
                 }
             />
+            {item?.secondaryIcon && (
+                <ListItemIcon onClick={item.onClickSecondaryIcon} sx={{ my: 'auto', minWidth: !item?.icon ? 18 : 36 }}>
+                    {itemIconSecondary}
+                </ListItemIcon>
+            )}
             {item.chip && (
                 <Chip
                     color={item.chip.color}

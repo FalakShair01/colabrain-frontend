@@ -19,7 +19,7 @@ const MainRoutes = {
     element: <MainLayout />,
     children: [
         {
-            path: '/',
+            path: '/:id',
             element: (
                 <AuthGuard>
                     <Chatbox />
@@ -33,6 +33,7 @@ const MainRoutes = {
                     <AccountSettings />
                 </AuthGuard>
             )
+
         }
     ]
 };

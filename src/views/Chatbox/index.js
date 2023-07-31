@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { styled } from '@mui/system';
-import { Paper } from '@mui/material';
+import { Paper, Typography, TextField, Button, InputAdornment } from '@mui/material';
+import { useParams } from 'react-router-dom';
+import useSwrRequest from 'hooks/useSWR';
+import { API_CHAT_ADD_MESSAGE, API_GET_CHAT } from 'config/WebServices';
+import useApiRequest from 'hooks/useApiRequest';
 import PerfectScrollbar from 'react-perfect-scrollbar';
-import ChatMessage from './ChatMessage';
-import ChatInput from './ChatInput';
+import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 
 const ChatContainer = styled(Paper)(({ theme }) => ({
     display: 'flex',
@@ -31,40 +34,104 @@ const MessageContainer = styled(PerfectScrollbar)(({ theme }) => ({
     flexDirection: 'column'
 }));
 
-const ChatBox = () => {
-    const [messages, setMessages] = useState([]);
+const Message = styled(Typography)(({ theme, isChatBot }) => ({
+    padding: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+    borderRadius: theme.spacing(1),
+    backgroundColor:'#E3F2FD',
+    color:'#364152',
+    alignSelf: isChatBot ? 'flex-start' : 'flex-end'
+}));
 
-    const getTimeStamp = () => {
-        const date = new Date();
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        const amPM = hours >= 12 ? 'PM' : 'AM';
-        const formattedHours = hours % 12 || 12;
-        const formattedMinutes = minutes.toString().padStart(2, '0');
-        return `${formattedHours}:${formattedMinutes} ${amPM}`;
+const InputContainer = styled('div')(({}) => ({
+    display: 'flex'
+}));
+
+const Input = styled(TextField)(({ theme }) => ({
+    flex: 1,
+    marginRight: theme.spacing(1)
+}));
+
+const SendButton = styled(Button)(({ theme }) => ({
+    minWidth: 'unset',
+    width: '40%',
+    marginRight: '-1.8rem', // Adjust the width based on the content (text/icon)
+    backgroundColor: theme.palette.primary.main,
+    boxShadow: 'none',
+    color: theme.palette.primary.contrastText,
+    '&:hover': {
+        backgroundColor: theme.palette.secondary.dark,
+        color: theme.palette.secondary.contrastText
+    }
+}));
+
+const ChatBox = () => {
+    const [message, setMessage] = useState('');
+    const [messages, setMessages] = useState([]);
+    const { id } = useParams();
+
+    const { data, error, mutate } = useSwrRequest(`${API_GET_CHAT.route}${id}/`);
+    const { requestEndpoint } = useApiRequest(API_CHAT_ADD_MESSAGE.route, API_CHAT_ADD_MESSAGE.type);
+
+    const handleInputChange = (event) => {
+        setMessage(event.target.value);
     };
 
-    const handleSend = (message) => {
-        setMessages((prevMessages) => [...prevMessages, { text: message, time: getTimeStamp(), isUserMessage: true }]);
+    const handleSend = async () => {
+        try {
+            const body = {
+                chat_id: id,
+                req: message
+            };
+            const response = await requestEndpoint(body);
 
-        // Simulate a reply message after a short delay (here, 1 second)
-        setTimeout(() => {
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                { text: 'This is a reply message!', time: getTimeStamp(), isUserMessage: false }
-            ]);
-        }, 1000);
+            if (message.trim() !== '') {
+                // setMessages((prevMessages) => [...prevMessages, message.trim()]);
+                setMessage('');
+            }
+            mutate();
+        } catch (error) {
+            console.log({ error }, '====');
+        }
     };
 
     return (
         <div>
-            <ChatContainer>
+            <ChatContainer elevation={3}>
                 <MessageContainer>
-                    {messages.map((msg, index) => (
-                        <ChatMessage key={index} text={msg.text} time={msg.time} isUserMessage={msg.isUserMessage} />
+                    {data?.messages?.map(({ id, req: _message, res: _chatBot }) => (
+                        <>
+                            <Message key={id + _message} variant="body2">
+                                {_message}
+                            </Message>
+                            <Message key={id + _chatBot} variant="body2" isChatBot>
+                                {_chatBot}
+                            </Message>
+                        </>
                     ))}
                 </MessageContainer>
-                <ChatInput onSend={handleSend} />
+                <InputContainer>
+                    <Input
+                        label="Type a message"
+                        variant="outlined"
+                        value={message}
+                        onChange={handleInputChange}
+                        onKeyPress={(event) => {
+                            if (event.key === 'Enter') {
+                                handleSend();
+                            }
+                        }}
+                        InputProps={{
+                    endAdornment: (
+                        <InputAdornment position="end">
+                            <SendButton variant="contained" disabled={!message.trim()} onClick={handleSend}>
+                                <SendOutlinedIcon />
+                            </SendButton>
+                        </InputAdornment>
+                    )
+                }}
+                    />
+                </InputContainer>
             </ChatContainer>
         </div>
     );
