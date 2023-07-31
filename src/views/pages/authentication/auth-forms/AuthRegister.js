@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import React, { useState } from 'react';
+import * as Yup from 'yup';
+import { Formik } from 'formik';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import configData from '../../../../config';
 
-// material-ui
-import { useTheme } from '@mui/material/styles';
+// Material-UI components and icons
 import {
     Box,
     Button,
-    Checkbox,
-    Divider,
     FormControl,
-    FormControlLabel,
     FormHelperText,
     Grid,
     IconButton,
@@ -18,40 +17,31 @@ import {
     InputLabel,
     OutlinedInput,
     TextField,
-    Typography,
-    useMediaQuery
+    Snackbar,
+    Typography
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import MuiAlert from '@mui/material/Alert';
 
-// third party
-import * as Yup from 'yup';
-import { Formik } from 'formik';
-
-// project imports
-import useScriptRef from 'hooks/useScriptRef';
-import Google from 'assets/images/icons/social-google.svg';
+// Third-party components
 import AnimateButton from 'ui-component/extended/AnimateButton';
 import { strengthColor, strengthIndicator } from 'utils/password-strength';
 
-// assets
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+const Alert = React.forwardRef((props, ref) => <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />);
 
-// ===========================|| FIREBASE - REGISTER ||=========================== //
-
-const FirebaseRegister = ({ ...others }) => {
+const Register = ({ ...others }) => {
+    const navigate = useNavigate();
     const theme = useTheme();
-    const scriptedRef = useScriptRef();
-    const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
-    const customization = useSelector((state) => state.customization);
     const [showPassword, setShowPassword] = useState(false);
-    const [checked, setChecked] = useState(true);
 
     const [strength, setStrength] = useState(0);
     const [level, setLevel] = useState();
 
-    const googleHandler = async () => {
-        console.error('Register');
-    };
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+    const [snackbarMessage, setSnackbarMessage] = useState('');
 
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword);
@@ -67,221 +57,214 @@ const FirebaseRegister = ({ ...others }) => {
         setLevel(strengthColor(temp));
     };
 
-    useEffect(() => {
-        changePassword('123456');
-    }, []);
+    const handleSubmitForm = async (values, { setErrors, setStatus, setSubmitting }) => {
+        try {
+            const formData = new FormData();
+            formData.append('user.username', values.username);
+            formData.append('user.email', values.email);
+            formData.append('user.password', values.password);
+            formData.append('phone', values.phone);
+            formData.append('company_name', values.company_name);
+
+            const response = await axios.post(configData.API_SERVER + 'register/', formData);
+
+            console.log('API response:', response.data);
+
+            setStatus({ success: true });
+
+            // Show success message in Snackbar
+            setSnackbarSeverity('success');
+            setSnackbarMessage('Registration successful! Redirecting to login page...');
+            setSnackbarOpen(true);
+
+            // Registration successful, redirect to the login page after a delay
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
+        } catch (err) {
+            console.error(err);
+            setStatus({ success: false });
+
+            if (err.response && err.response.data && err.response.data.errors) {
+                const apiErrors = err.response.data.errors;
+                const formErrors = {};
+                Object.keys(apiErrors).forEach((field) => {
+                    formErrors[field] = apiErrors[field][0];
+                });
+                setErrors(formErrors);
+            }
+
+            // Show error message in Snackbar
+            setSnackbarSeverity('error');
+            setSnackbarMessage('An error occurred during registration. Please try again.');
+            setSnackbarOpen(true);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setSnackbarOpen(false);
+    };
 
     return (
         <>
-            <Grid container direction="column" justifyContent="center" spacing={2}>
-                <Grid item xs={12}>
-                    <AnimateButton>
-                        <Button
-                            variant="outlined"
-                            fullWidth
-                            onClick={googleHandler}
-                            size="large"
-                            sx={{
-                                color: 'grey.700',
-                                backgroundColor: theme.palette.grey[50],
-                                borderColor: theme.palette.grey[100]
-                            }}
-                        >
-                            <Box sx={{ mr: { xs: 1, sm: 2, width: 20 } }}>
-                                <img src={Google} alt="google" width={16} height={16} style={{ marginRight: matchDownSM ? 8 : 16 }} />
-                            </Box>
-                            Sign up with Google
-                        </Button>
-                    </AnimateButton>
-                </Grid>
-                <Grid item xs={12}>
-                    <Box sx={{ alignItems: 'center', display: 'flex' }}>
-                        <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
-                        <Button
-                            variant="outlined"
-                            sx={{
-                                cursor: 'unset',
-                                m: 2,
-                                py: 0.5,
-                                px: 7,
-                                borderColor: `${theme.palette.grey[100]} !important`,
-                                color: `${theme.palette.grey[900]}!important`,
-                                fontWeight: 500,
-                                borderRadius: `${customization.borderRadius}px`
-                            }}
-                            disableRipple
-                            disabled
-                        >
-                            OR
-                        </Button>
-                        <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
-                    </Box>
-                </Grid>
-                <Grid item xs={12} container alignItems="center" justifyContent="center">
-                    <Box sx={{ mb: 2 }}>
-                        <Typography variant="subtitle1">Sign up with Email address</Typography>
-                    </Box>
-                </Grid>
-            </Grid>
+            {/* ... Your JSX content here ... */}
 
             <Formik
                 initialValues={{
+                    username: '',
                     email: '',
                     password: '',
+                    companyName: '',
+                    phone: '',
                     submit: null
                 }}
                 validationSchema={Yup.object().shape({
+                    username: Yup.string().required('Username is required'),
                     email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-                    password: Yup.string().max(255).required('Password is required')
+                    password: Yup.string().max(255).required('Password is required'),
+                    companyName: Yup.string().required('Company Name is required'),
+                    phone: Yup.string().required('Phone is required')
                 })}
-                onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
-                    try {
-                        if (scriptedRef.current) {
-                            setStatus({ success: true });
-                            setSubmitting(false);
-                        }
-                    } catch (err) {
-                        console.error(err);
-                        if (scriptedRef.current) {
-                            setStatus({ success: false });
-                            setErrors({ submit: err.message });
-                            setSubmitting(false);
-                        }
-                    }
-                }}
+                onSubmit={handleSubmitForm}
             >
                 {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
                     <form noValidate onSubmit={handleSubmit} {...others}>
-                        <Grid container spacing={matchDownSM ? 0 : 2}>
+                        <Grid container spacing={1}>
                             <Grid item xs={12} sm={6}>
                                 <TextField
-                                    fullWidth
-                                    label="First Name"
-                                    margin="normal"
-                                    name="fname"
-                                    type="text"
-                                    defaultValue=""
                                     sx={{ ...theme.typography.customInput }}
+                                    fullWidth
+                                    label="Username"
+                                    margin="normal"
+                                    name="username"
+                                    type="text"
+                                    value={values.username}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                    error={Boolean(touched.username && errors.username)}
+                                    helperText={touched.username && errors.username}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
-                                    fullWidth
-                                    label="Last Name"
-                                    margin="normal"
-                                    name="lname"
-                                    type="text"
-                                    defaultValue=""
                                     sx={{ ...theme.typography.customInput }}
+                                    fullWidth
+                                    label="Company Name"
+                                    margin="normal"
+                                    name="companyName"
+                                    type="text"
+                                    value={values.companyName}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                    error={Boolean(touched.companyName && errors.companyName)}
+                                    helperText={touched.companyName && errors.companyName}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    sx={{ ...theme.typography.customInput }}
+                                    fullWidth
+                                    label="Email Address"
+                                    margin="normal"
+                                    name="email"
+                                    type="email"
+                                    value={values.email}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                    error={Boolean(touched.email && errors.email)}
+                                    helperText={touched.email && errors.email}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <FormControl
+                                    fullWidth
+                                    error={Boolean(touched.password && errors.password)}
+                                    sx={{ ...theme.typography.customInput }}
+                                >
+                                    <InputLabel htmlFor="outlined-adornment-password-register">Password</InputLabel>
+                                    <OutlinedInput
+                                        id="outlined-adornment-password-register"
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={values.password}
+                                        name="password"
+                                        label="Password"
+                                        onBlur={handleBlur}
+                                        onChange={(e) => {
+                                            handleChange(e);
+                                            changePassword(e.target.value);
+                                        }}
+                                        endAdornment={
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    aria-label="toggle password visibility"
+                                                    onClick={handleClickShowPassword}
+                                                    onMouseDown={handleMouseDownPassword}
+                                                    edge="end"
+                                                    size="large"
+                                                >
+                                                    {showPassword ? <Visibility /> : <VisibilityOff />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        }
+                                        inputProps={{}}
+                                    />
+                                    {touched.password && errors.password && (
+                                        <FormHelperText error id="standard-weight-helper-text-password-register">
+                                            {errors.password}
+                                        </FormHelperText>
+                                    )}
+                                </FormControl>
+
+                                {strength !== 0 && (
+                                    <FormControl fullWidth>
+                                        <Box sx={{ mb: 2 }}>
+                                            <Grid container spacing={2} alignItems="center">
+                                                <Grid item>
+                                                    <Box
+                                                        style={{ backgroundColor: level?.color }}
+                                                        sx={{ width: 85, height: 8, borderRadius: '7px' }}
+                                                    />
+                                                </Grid>
+                                                <Grid item>
+                                                    <Typography variant="subtitle1" fontSize="0.75rem">
+                                                        {level?.label}
+                                                    </Typography>
+                                                </Grid>
+                                            </Grid>
+                                        </Box>
+                                    </FormControl>
+                                )}
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    sx={{ ...theme.typography.customInput }}
+                                    fullWidth
+                                    label="Phone"
+                                    margin="normal"
+                                    name="phone"
+                                    type="text"
+                                    value={values.phone}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                    error={Boolean(touched.phone && errors.phone)}
+                                    helperText={touched.phone && errors.phone}
                                 />
                             </Grid>
                         </Grid>
-                        <FormControl fullWidth error={Boolean(touched.email && errors.email)} sx={{ ...theme.typography.customInput }}>
-                            <InputLabel htmlFor="outlined-adornment-email-register">Email Address / Username</InputLabel>
-                            <OutlinedInput
-                                id="outlined-adornment-email-register"
-                                type="email"
-                                value={values.email}
-                                name="email"
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                inputProps={{}}
-                            />
-                            {touched.email && errors.email && (
-                                <FormHelperText error id="standard-weight-helper-text--register">
-                                    {errors.email}
-                                </FormHelperText>
-                            )}
-                        </FormControl>
 
-                        <FormControl
-                            fullWidth
-                            error={Boolean(touched.password && errors.password)}
-                            sx={{ ...theme.typography.customInput }}
-                        >
-                            <InputLabel htmlFor="outlined-adornment-password-register">Password</InputLabel>
-                            <OutlinedInput
-                                id="outlined-adornment-password-register"
-                                type={showPassword ? 'text' : 'password'}
-                                value={values.password}
-                                name="password"
-                                label="Password"
-                                onBlur={handleBlur}
-                                onChange={(e) => {
-                                    handleChange(e);
-                                    changePassword(e.target.value);
-                                }}
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="toggle password visibility"
-                                            onClick={handleClickShowPassword}
-                                            onMouseDown={handleMouseDownPassword}
-                                            edge="end"
-                                            size="large"
-                                        >
-                                            {showPassword ? <Visibility /> : <VisibilityOff />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
-                                inputProps={{}}
-                            />
-                            {touched.password && errors.password && (
-                                <FormHelperText error id="standard-weight-helper-text-password-register">
-                                    {errors.password}
-                                </FormHelperText>
-                            )}
-                        </FormControl>
-
-                        {strength !== 0 && (
-                            <FormControl fullWidth>
-                                <Box sx={{ mb: 2 }}>
-                                    <Grid container spacing={2} alignItems="center">
-                                        <Grid item>
-                                            <Box
-                                                style={{ backgroundColor: level?.color }}
-                                                sx={{ width: 85, height: 8, borderRadius: '7px' }}
-                                            />
-                                        </Grid>
-                                        <Grid item>
-                                            <Typography variant="subtitle1" fontSize="0.75rem">
-                                                {level?.label}
-                                            </Typography>
-                                        </Grid>
-                                    </Grid>
-                                </Box>
-                            </FormControl>
-                        )}
-
-                        <Grid container alignItems="center" justifyContent="space-between">
-                            <Grid item>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={checked}
-                                            onChange={(event) => setChecked(event.target.checked)}
-                                            name="checked"
-                                            color="primary"
-                                        />
-                                    }
-                                    label={
-                                        <Typography variant="subtitle1">
-                                            Agree with &nbsp;
-                                            <Typography variant="subtitle1" component={Link} to="#">
-                                                Terms & Condition.
-                                            </Typography>
-                                        </Typography>
-                                    }
-                                />
-                            </Grid>
-                        </Grid>
                         {errors.submit && (
-                            <Box sx={{ mt: 3 }}>
+                            <Box mt={3}>
                                 <FormHelperText error>{errors.submit}</FormHelperText>
                             </Box>
                         )}
 
-                        <Box sx={{ mt: 2 }}>
+                        <Box mt={2}>
                             <AnimateButton>
                                 <Button
                                     disableElevation
@@ -299,8 +282,15 @@ const FirebaseRegister = ({ ...others }) => {
                     </form>
                 )}
             </Formik>
+
+            {/* Snackbar to show success and error messages */}
+            <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleSnackbarClose}>
+                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </>
     );
 };
 
-export default FirebaseRegister;
+export default Register;

@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 
 // material-ui
+import { Divider, Typography } from '@mui/material';
+
+// project imports
+import menuItem2 from 'menu-items/menu-items-2';
 import { Typography } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 
@@ -44,7 +48,7 @@ const MenuList = () => {
                     id: _chat.id,
                     title: _chat.title,
                     type: 'item',
-                    url: `/Chatbox/${_chat.id}`,
+                    url: `/${_chat.id}`,
                     icon: IconMessage,
                     breadcrumbs: false,
                     secondaryIcon: Delete,
@@ -70,8 +74,29 @@ const MenuList = () => {
                 );
         }
     });
+    const navItems2 = menuItem2.items.map((item) => {
+        switch (item.type) {
+            case 'group':
+                return <NavGroup key={item.id} item={item} />;
+            default:
+                return (
+                    <Typography key={item.id} variant="h6" color="error" align="center">
+                        Menu Items Error
+                    </Typography>
+                );
+        }
+    });
 
-    return <>{navItems}</>;
+    return (
+        <>
+            <div>{navItems1}</div>
+
+            <div style={{ position: 'absolute', bottom: '4rem', width: '87%' }}>
+                <Divider />
+                {navItems2}
+            </div>
+        </>
+    );
 };
 
 export default MenuList;
